@@ -288,18 +288,59 @@ function renderFeaturedCareers() {
     const grid = document.getElementById('featuredCareers');
     if (!grid) return;
 
-    // Show top 12 careers
-    const featured = allCareers.slice(0, 12);
+    const featured = selectPopularCareers(12);
     grid.innerHTML = featured.map(career => createCareerCard(career)).join('');
+}
+
+function selectPopularCareers(limit = 12) {
+    const careersWithScore = allCareers.map(career => ({
+        career,
+        score: computeCareerPopularityScore(career)
+    }));
+
+    const topCareers = careersWithScore
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score || a.career.name.localeCompare(b.career.name))
+        .slice(0, limit)
+        .map(item => item.career);
+
+    return topCareers.length ? topCareers : allCareers.slice(0, limit);
+}
+
+function computeCareerPopularityScore(career) {
+    const entry = parseSalaryAverage(career.income?.entry);
+    const mid = parseSalaryAverage(career.income?.mid_career);
+    const senior = parseSalaryAverage(career.income?.senior);
+
+    if (!entry && !mid && !senior) return 0;
+
+    return entry * 0.6 + mid * 0.25 + senior * 0.15;
+}
+
+function parseSalaryAverage(value) {
+    if (!value) return 0;
+    const numbers = String(value).match(/\d+/g)?.map(Number) || [];
+    if (!numbers.length) return 0;
+    return numbers.reduce((sum, n) => sum + n, 0) / numbers.length;
+}
+
+function sanitizeText(text) {
+    if (!text) return '';
+    let result = String(text);
+    result = result.replace(/[\u200B-\u200F\u202A-\u202E]/g, '');
+    result = result.replace(/\s+/g, ' ');
+    result = result.replace(/([A-Za-z0-9])\1{2,}/g, '$1$1');
+    result = result.replace(/([^\w\s])\1{2,}/g, '$1');
+    return result.trim();
 }
 
 function createCareerCard(career) {
     const isBookmarked = bookmarkedCareers.includes(career.id);
     return `
-        <div class="career-card" role="button" tabindex="0" aria-label="View ${career.name} details" onclick="navigateToCareerById('${career.id}')" onkeydown="if(event.key==='Enter' || event.key===' ') navigateToCareerById('${career.id}')">
+        <div class="career-card" role="button" tabindex="0" aria-label="View ${sanitizeText(career.name)} details" onclick="navigateToCareerById('${career.id}')" onkeydown="if(event.key==='Enter' || event.key===' ') navigateToCareerById('${career.id}')">
             <div class="career-card-header">
-                <div class="career-card-title">${career.name}</div>
-                <div class="career-card-stream">${career.stream}</div>
+                <div class="career-card-title">${sanitizeText(career.name)}</div>
+                <div class="career-card-stream">${sanitizeText(career.stream)}</div>
             </div>
             <div class="career-card-body">
                 <p class="career-card-description">${truncateText(career.introduction, 80)}</p>
@@ -320,17 +361,13 @@ function createCareerCard(career) {
 }
 
 function truncateText(text, length) {
-    return text.length > length ? text.substring(0, length) + '...' : text;
+    const cleanText = sanitizeText(String(text || ''));
+    return cleanText.length > length ? cleanText.substring(0, length) + '...' : cleanText;
 }
 
 // ============================================
 // EXPLORE PAGE
 // ============================================
-
-function renderExplorePage() {
-    renderStreamFilters();
-    applyFilters();
-}
 
 function renderStreamFilters() {
     const filterContainer = document.getElementById('streamFilter');
@@ -359,6 +396,12 @@ function renderStreamFilters() {
             <span>${stream}</span>
         </label>
     `).join('');
+}
+
+function renderExplorePage() {
+    renderStreamFilters();
+    applyPendingStreamFilter();
+    applyFilters();
 }
 
 function applyFilters() {
@@ -398,17 +441,9 @@ function sortCareers(careers, sortBy) {
         case 'name-desc':
             return sorted.sort((a, b) => b.name.localeCompare(a.name));
         case 'salary-high':
-            return sorted.sort((a, b) => {
-                const aVal = parseInt(b.income?.entry?.replace(/[^0-9]/g, '') || 0);
-                const bVal = parseInt(a.income?.entry?.replace(/[^0-9]/g, '') || 0);
-                return aVal - bVal;
-            });
+            return sorted.sort((a, b) => parseSalaryValue(b.income?.entry) - parseSalaryValue(a.income?.entry));
         case 'salary-low':
-            return sorted.sort((a, b) => {
-                const aVal = parseInt(a.income?.entry?.replace(/[^0-9]/g, '') || 0);
-                const bVal = parseInt(b.income?.entry?.replace(/[^0-9]/g, '') || 0);
-                return aVal - bVal;
-            });
+            return sorted.sort((a, b) => parseSalaryValue(a.income?.entry) - parseSalaryValue(b.income?.entry));
         default:
             return sorted;
     }
@@ -433,10 +468,10 @@ function renderCareersResults(careers) {
 
     noResultsDiv.style.display = 'none';
     resultsDiv.innerHTML = careers.map(career => `
-        <div class="career-list-item" role="button" tabindex="0" aria-label="View ${career.name} details" onclick="navigateToCareerById('${career.id}')" onkeydown="if(event.key==='Enter' || event.key===' ') navigateToCareerById('${career.id}')">
+        <div class="career-list-item" role="button" tabindex="0" aria-label="View ${sanitizeText(career.name)} details" onclick="navigateToCareerById('${career.id}')" onkeydown="if(event.key==='Enter' || event.key===' ') navigateToCareerById('${career.id}')">
             <div class="career-list-info">
-                <div class="career-list-title">${career.name}</div>
-                <div class="career-list-stream">${career.stream}</div>
+                <div class="career-list-title">${sanitizeText(career.name)}</div>
+                <div class="career-list-stream">${sanitizeText(career.stream)}</div>
             </div>
             <div class="career-list-arrow">→</div>
         </div>
@@ -474,12 +509,6 @@ function applyPendingStreamFilter() {
         checkbox.checked = true;
     }
     pendingStreamFilter = null;
-}
-
-function renderExplorePage() {
-    renderStreamFilters();
-    applyPendingStreamFilter();
-    applyFilters();
 }
 
 // ============================================

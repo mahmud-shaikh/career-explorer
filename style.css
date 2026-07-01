@@ -338,8 +338,17 @@ body {
 .section-title {
     font-size: 32px;
     font-weight: 700;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     text-align: center;
+}
+
+.section-description {
+    max-width: 760px;
+    margin: 0 auto 40px;
+    color: var(--text-secondary);
+    font-size: 16px;
+    text-align: center;
+    line-height: 1.7;
 }
 
 .streams-section {
@@ -429,11 +438,17 @@ body {
     font-size: 18px;
     font-weight: 700;
     margin-bottom: 8px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 .career-card-stream {
     font-size: 12px;
     opacity: 0.9;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 .career-card-body {
@@ -649,11 +664,17 @@ body {
     font-size: 16px;
     font-weight: 700;
     margin-bottom: 4px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 .career-list-stream {
     font-size: 12px;
     color: var(--text-secondary);
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 .career-list-arrow {
