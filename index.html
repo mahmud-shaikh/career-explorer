@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Explorer - Professional Career Guidance Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header Navigation -->
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">
+                        <span class="logo-icon">🎯</span>
+                        <span class="logo-text">Career Explorer</span>
+                    </div>
+                    <nav class="nav">
+                        <button class="nav-link" onclick="navigateTo('home')">Home</button>
+                        <button class="nav-link" onclick="navigateTo('explore')">Explore</button>
+                        <button class="nav-link" onclick="navigateTo('bookmarks')">
+                            <span>📌 Bookmarks</span>
+                            <span class="badge" id="bookmarkBadge">0</span>
+                        </button>
+                        <button class="nav-link" onclick="navigateTo('compare')">Compare</button>
+                        <button class="theme-toggle" id="themeToggle" title="Toggle Dark Mode" onclick="toggleTheme()" aria-label="Toggle dark mode" aria-pressed="false">🌙</button>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Home Page -->
+            <div id="homePage" class="page active">
+                <section class="hero">
+                    <div class="container">
+                        <div class="hero-content">
+                            <h1 class="hero-title">Explore Your Career Path</h1>
+                            <p class="hero-subtitle">Discover 503 professional careers and find the perfect fit for your future</p>
+                            
+                            <!-- Search Bar -->
+                            <div class="search-container">
+                                <div class="search-wrapper">
+                                    <input 
+                                        type="text" 
+                                        id="searchInput" 
+                                        class="search-input" 
+                                        placeholder="Search careers, skills, or streams..."
+                                        autocomplete="off"
+                                        aria-label="Search careers, skills, or streams"
+                                        aria-controls="searchSuggestions"
+                                        aria-autocomplete="list"
+                                    >
+                                    <span class="search-icon">🔍</span>
+                                    <div id="searchSuggestions" class="search-suggestions" role="listbox" aria-label="Search suggestions"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Browse by Stream Section -->
+                <section class="streams-section">
+                    <div class="container">
+                        <h2 class="section-title">Browse by Stream</h2>
+                        <div class="streams-grid" id="streamsGrid">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Featured Careers Section -->
+                <section class="featured-section">
+                    <div class="container">
+                        <h2 class="section-title">Popular Careers</h2>
+                        <div class="careers-grid" id="featuredCareers">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Explore Page -->
+            <div id="explorePage" class="page">
+                <div class="container">
+                    <div class="explore-header">
+                        <h1>Explore All Careers</h1>
+                        <p>Discover and search through 503 professional careers</p>
+                    </div>
+
+                    <!-- Filters Sidebar -->
+                    <div class="explore-layout">
+                        <aside class="filters-sidebar">
+                            <div class="filters-header">
+                                <h3>Filters</h3>
+                                <button class="reset-filters" onclick="resetFilters()">Reset</button>
+                            </div>
+
+                            <!-- Stream Filter -->
+                            <div class="filter-group">
+                                <h4>Stream</h4>
+                                <div class="filter-options" id="streamFilter">
+                                    <!-- Populated by JavaScript -->
+                                </div>
+                            </div>
+
+                            <!-- Sort Filter -->
+                            <div class="filter-group">
+                                <h4>Sort By</h4>
+                                <select id="sortFilter" class="select-filter" onchange="applyFilters()">
+                                    <option value="name-asc">Name (A-Z)</option>
+                                    <option value="name-desc">Name (Z-A)</option>
+                                    <option value="salary-high">Salary (High to Low)</option>
+                                    <option value="salary-low">Salary (Low to High)</option>
+                                    <option value="growth-high">Growth (Highest)</option>
+                                </select>
+                            </div>
+                        </aside>
+
+                        <!-- Main Content -->
+                        <section class="explore-content">
+                            <!-- Search Bar -->
+                            <div class="search-container explore-search">
+                                <input 
+                                    type="text" 
+                                    class="search-input-explore" 
+                                    id="exploreSearch"
+                                    placeholder="Search careers..."
+                                    onkeyup="applyFilters()"
+                                    aria-label="Search careers in explore"
+                                >
+                            </div>
+
+                            <!-- Results -->
+                            <div id="careersResults" class="careers-list">
+                                <!-- Populated by JavaScript -->
+                            </div>
+
+                            <!-- No Results -->
+                            <div id="noResults" class="no-results" style="display: none;">
+                                <div class="no-results-content">
+                                    <span class="no-results-icon">🔍</span>
+                                    <h3>No Careers Found</h3>
+                                    <p>Try adjusting your search or filters</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Career Detail Page -->
+            <div id="careerPage" class="page">
+                <div class="container">
+                    <!-- Breadcrumb -->
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item" onclick="navigateTo('explore')">Careers</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-item" id="careerBreadcrumb">Career</span>
+                    </div>
+
+                    <!-- Career Hero Section -->
+                    <section class="career-hero">
+                        <div class="career-hero-content">
+                            <div class="career-header-info">
+                                <h1 id="careerTitle" class="career-title"></h1>
+                                <div class="career-meta">
+                                    <span class="stream-badge" id="careerStream"></span>
+                                    <span class="growth-badge" id="careerGrowth"></span>
+                                </div>
+                            </div>
+                            <button class="bookmark-btn" id="bookmarkBtn" onclick="toggleBookmark()">
+                                <span class="bookmark-icon">📌</span>
+                                <span>Bookmark</span>
+                            </button>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="quick-stats">
+                            <div class="stat-card">
+                                <span class="stat-label">Entry Salary</span>
+                                <span class="stat-value" id="entrySalary"></span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">Course Duration</span>
+                                <span class="stat-value" id="courseDuration"></span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-label">Growth Rate</span>
+                                <span class="stat-value" id="growthRate"></span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Career Content Tabs -->
+                    <section class="career-content">
+                        <div class="tabs-container">
+                            <button class="tab-btn active" onclick="switchTab('about', event)">About</button>
+                            <button class="tab-btn" onclick="switchTab('education', event)">Education</button>
+                            <button class="tab-btn" onclick="switchTab('income', event)">Income & Growth</button>
+                            <button class="tab-btn" onclick="switchTab('opportunities', event)">Opportunities</button>
+                            <button class="tab-btn" onclick="switchTab('pathway', event)">Pathway</button>
+                        </div>
+
+                        <!-- Tab Contents -->
+                        <div id="aboutTab" class="tab-content active">
+                            <h3>About This Career</h3>
+                            <p id="careerIntroduction"></p>
+                            
+                            <h4>Required Skills</h4>
+                            <div class="skills-tags" id="careerSkills">
+                                <!-- Populated by JavaScript -->
+                            </div>
+
+                            <h4>Personality Traits</h4>
+                            <div class="traits-tags" id="careerTraits">
+                                <!-- Populated by JavaScript -->
+                            </div>
+
+                            <h4>Real Example</h4>
+                            <div class="example-box" id="careerExample"></div>
+                        </div>
+
+                        <div id="educationTab" class="tab-content">
+                            <h3>Educational Pathway</h3>
+                            <div class="pathway-roadmap" id="educationPathway">
+                                <!-- Populated by JavaScript -->
+                            </div>
+
+                            <h3>Course Details</h3>
+                            <div class="course-details">
+                                <div class="detail-card">
+                                    <h4>Course Duration</h4>
+                                    <p id="courseDurationDetail"></p>
+                                </div>
+                                <div class="detail-card">
+                                    <h4>Course Fees</h4>
+                                    <p id="courseFees"></p>
+                                </div>
+                            </div>
+
+                            <h3>Where to Study</h3>
+                            <div class="cards-grid" id="whereToStudy">
+                                <!-- Populated by JavaScript -->
+                            </div>
+
+                            <h3>Available Scholarships</h3>
+                            <div class="scholarships-list" id="scholarships">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div id="incomeTab" class="tab-content">
+                            <h3>Expected Income</h3>
+                            <div class="income-breakdown">
+                                <div class="income-card">
+                                    <h4>Entry Level</h4>
+                                    <p class="income-value" id="incomeEntry"></p>
+                                </div>
+                                <div class="income-card">
+                                    <h4>Mid-Career</h4>
+                                    <p class="income-value" id="incomeMid"></p>
+                                </div>
+                                <div class="income-card">
+                                    <h4>Senior Level</h4>
+                                    <p class="income-value" id="incomeSenior"></p>
+                                </div>
+                            </div>
+
+                            <h3>Expected Growth</h3>
+                            <div class="growth-details" id="growthDetails"></div>
+                        </div>
+
+                        <div id="opportunitiesTab" class="tab-content">
+                            <h3>Where to Work</h3>
+                            <div class="opportunities-list" id="whereToWork">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+
+                        <div id="pathwayTab" class="tab-content">
+                            <h3>Complete Career Pathway</h3>
+                            <div class="full-pathway" id="fullPathway">
+                                <!-- Populated by JavaScript -->
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Related Careers -->
+                    <section class="related-section">
+                        <h2>Related Careers</h2>
+                        <div class="careers-grid" id="relatedCareers">
+                            <!-- Populated by JavaScript -->
+                        </div>
+                    </section>
+
+                    <!-- Navigation -->
+                    <div class="career-navigation">
+                        <button class="nav-btn prev-btn" id="prevBtn" onclick="navigatePrevious()">← Previous</button>
+                        <button class="nav-btn back-btn" onclick="navigateTo('explore')">Back to Explore</button>
+                        <button class="nav-btn next-btn" id="nextBtn" onclick="navigateNext()">Next →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookmarks Page -->
+            <div id="bookmarksPage" class="page">
+                <div class="container">
+                    <h1>My Bookmarks</h1>
+                    <div id="bookmarksList" class="careers-list">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                    <div id="noBookmarks" class="no-results" style="display: none;">
+                        <span class="no-results-icon">📌</span>
+                        <h3>No Bookmarks Yet</h3>
+                        <p>Start bookmarking careers you're interested in</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compare Page -->
+            <div id="comparePage" class="page">
+                <div class="container">
+                    <h1>Compare Careers</h1>
+                    
+                    <div class="compare-selection">
+                        <div class="compare-inputs">
+                            <div class="compare-input-group">
+                                <label>Select First Career</label>
+                                <input type="text" id="compareInput1" placeholder="Search career..." class="compare-input" onkeyup="showCompareDropdown(1)" aria-label="Select first career to compare" aria-controls="compareDropdown1" aria-autocomplete="list">
+                                <div id="compareDropdown1" class="compare-dropdown" role="listbox" aria-label="First career suggestions"></div>
+                            </div>
+                            <div class="compare-inputs">
+                                <div class="compare-input-group">
+                                    <label>Select Second Career</label>
+                                    <input type="text" id="compareInput2" placeholder="Search career..." class="compare-input" onkeyup="showCompareDropdown(2)" aria-label="Select second career to compare" aria-controls="compareDropdown2" aria-autocomplete="list">
+                                    <div id="compareDropdown2" class="compare-dropdown" role="listbox" aria-label="Second career suggestions"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="comparisonResult" class="comparison-table" style="display: none;">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <p>&copy; 2026 Career Explorer. Built from NCERT Exploring Career Cards (Vol. 1 & 2)</p>
+                <p>Explore 503 professional careers and find your perfect path.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
